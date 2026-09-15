@@ -28,13 +28,13 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SENDER_NAME = os.getenv("SENDER_NAME", "AI Job Agent")
 EMAIL_NOTIFICATIONS_ENABLED = os.getenv("EMAIL_NOTIFICATIONS_ENABLED", "True").lower() in ("true", "1", "yes")
 
-# Job Search & Application Limits
+# Job Search & Application Limits (Full 24-Hour Schedule: 12:00 AM to 11:59 PM)
 MAX_DAILY_APPLICATIONS = int(os.getenv("MAX_DAILY_APPLICATIONS", "24"))
 MIN_DAILY_APPLICATIONS = int(os.getenv("MIN_DAILY_APPLICATIONS", "20"))
 HOURLY_APPLICATIONS_MIN = int(os.getenv("HOURLY_APPLICATIONS_MIN", "1"))
 HOURLY_APPLICATIONS_MAX = int(os.getenv("HOURLY_APPLICATIONS_MAX", "3"))
-ACTIVE_HOURS_START = int(os.getenv("ACTIVE_HOURS_START", "7"))  # 07:00 AM
-ACTIVE_HOURS_END = int(os.getenv("ACTIVE_HOURS_END", "23"))     # 11:00 PM
+ACTIVE_HOURS_START = int(os.getenv("ACTIVE_HOURS_START", "0"))   # 12:00 AM Midnight
+ACTIVE_HOURS_END = int(os.getenv("ACTIVE_HOURS_END", "23"))      # 11:59 PM End of Day
 MIN_MATCH_SCORE = int(os.getenv("MIN_MATCH_SCORE", "60"))
 
 # Database
