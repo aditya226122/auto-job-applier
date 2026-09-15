@@ -1,0 +1,125 @@
+{
+  "personal_info": {
+    "full_name": "UDAYA LAKSHMI BODDU",
+    "first_name": "Udaya Lakshmi",
+    "last_name": "Boddu",
+    "email": "udayalakshmiboddu83@gmail.com",
+    "phone": "+91 7396675016",
+    "address": "Kakinada, AP 533003",
+    "city": "Kakinada",
+    "state": "Andhra Pradesh",
+    "country": "India",
+    "postal_code": "533003",
+    "linkedin": "https://www.linkedin.com/in/udaya-lakshmi-boddu",
+    "github": "https://github.com/udayalakshmiboddu",
+    "portfolio": "",
+    "work_authorization": "Authorized to work in India",
+    "require_visa_sponsorship": "No",
+    "gender": "Female"
+  },
+  "summary": "Motivated and detail-oriented Electrical and Electronics Engineering student with foundational knowledge in Sql, AI tools, and project management concepts. Passionate about learning new technologies and applying analytical and problem-solving skills to real-world challenges. Quick learner with strong teamwork and communication abilities, seeking an opportunity to grow and contribute organisations.",
+  "education": [
+    {
+      "institution": "University College of Engineering Kakinada, JNTUK",
+      "location": "Kakinada, India",
+      "degree": "B.Tech in Electrical and Electronics Engineering",
+      "grade": "CGPA: 7.4",
+      "start_date": "Nov 2023",
+      "end_date": "Present (Expected 2027)",
+      "is_current": true
+    },
+    {
+      "institution": "Kavitha Junior College",
+      "location": "Srikakulam, India",
+      "degree": "Intermediate (M.P.C)",
+      "grade": "94.7%",
+      "start_date": "Jul 2021",
+      "end_date": "Mar 2023",
+      "is_current": false
+    },
+    {
+      "institution": "St. Ann's English Medium School",
+      "location": "Srikakulam, India",
+      "degree": "Schooling (SSC / 10th)",
+      "grade": "95%",
+      "start_date": "Jul 2012",
+      "end_date": "Apr 2021",
+      "is_current": false
+    }
+  ],
+  "technical_skills": {
+    "programming_languages": ["Basics of C programming", "SQL"],
+    "tools_and_platforms": [
+      "Arduino IDE", 
+      "n8n", 
+      "Microsoft tools (Excel, Word, PowerPoint, Power BI)", 
+      "AI tools"
+    ],
+    "domains_and_technical_skills": [
+      "Embedded systems", 
+      "IOT", 
+      "Electric machines", 
+      "Power systems", 
+      "Web dashboard design", 
+      "SQL",
+      "Microcontrollers", 
+      "Sensor interfacing"
+    ],
+    "soft_skills": [
+      "Time management", 
+      "Design Thinking", 
+      "Effective Communication", 
+      "Project management", 
+      "Teamwork", 
+      "Problem Solving"
+    ]
+  },
+  "projects": [
+    {
+      "title": "Multi Parameter Decision Making Adaptive Irrigation System",
+      "description": "Developed a Multi Parameter Decision making adaptive Irrigation system with cloud-edge architecture controlled and monitored with mobile app with multi lingual AI assistant.",
+      "technologies": ["IoT", "Cloud-Edge Architecture", "AI Assistant", "Mobile App", "Sensors", "Arduino"]
+    },
+    {
+      "title": "Cloud-Enabled Voice-Controlled Web Dashboard for Smart Home",
+      "description": "Developed a cloud-enabled voice-controlled web dashboard for remotely monitoring and controlling home appliances in real time, enabling seamless global access and operation through IoT and cloud architecture.",
+      "technologies": ["IoT", "Cloud Architecture", "Voice Control", "Web Dashboard Design", "Embedded Systems"]
+    }
+  ],
+  "internships": [
+    {
+      "company": "HMIES Pvt. Ltd.",
+      "role": "Intern - Embedded Systems & IoT",
+      "description": "Gained hands-on experience in embedded systems, microcontrollers, IoT technologies, sensor interfacing, and real time projects."
+    }
+  ],
+  "certifications": [
+    "Community service project certificate for involving in activities done by red cross society",
+    "Workshop certificate for attending a workshop on AI tools master class",
+    "NPTEL certification for completing design thinking and innovation course"
+  ],
+  "extra_curricular": [
+    "Classical dancer certified and awarded by JNTUK in convocation and also certified with first place on international women's day"
+  ],
+  "job_search_preferences": {
+    "target_roles": [
+      "Graduate Engineer Trainee",
+      "Associate Software Engineer",
+      "Junior IoT Engineer",
+      "Junior Embedded Systems Engineer",
+      "Fresher Software Engineer",
+      "SQL Developer Fresher",
+      "Junior Electrical Engineer Trainee",
+      "Power Systems / Electrical Trainee",
+      "Power BI / Data Analyst Fresher",
+      "Graduate Trainee Engineer",
+      "Junior Automation Engineer",
+      "Junior AI Tools Trainee"
+    ],
+    "experience_level": ["Fresher", "Entry level", "0-1 years", "Internship / Graduate Trainee"],
+    "target_locations": ["Hyderabad", "Bengaluru", "Chennai", "Visakhapatnam", "Pune", "Remote", "India"],
+    "min_match_score": 60,
+    "max_daily_applications": 24,
+    "min_daily_applications": 20
+  }
+}
