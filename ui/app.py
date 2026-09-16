@@ -77,8 +77,10 @@ with ctrl_col3:
         res = notifier.send_single_application_alert(sample_job, 95, "Test Application via Dashboard")
         st.toast("Email sent to udayalakshmiboddu83@gmail.com!" if res else "Check SMTP settings in .env")
 
+from engine.inbox_listener import inbox_verifier
+
 # Tabs
-tab1, tab2, tab3 = st.tabs(["📋 Applied Jobs History", "🔍 Discover Fresh Jobs", "👤 Candidate Profile"])
+tab1, tab2, tab3, tab4 = st.tabs(["📋 Applied Jobs History", "🔍 Discover Fresh Jobs", "👤 Candidate Profile", "📬 Verified Company Emails"])
 
 with tab1:
     st.subheader("Application Logs & Verified Proof of Submission")
@@ -162,3 +164,19 @@ with tab2:
 with tab3:
     st.subheader("Loaded Candidate Resume Profile")
     st.json(matcher.profile.data)
+
+with tab4:
+    st.subheader("📬 Verified Company-Side Confirmation Emails")
+    st.caption("Live scan of your candidate inbox for official acknowledgment emails from company recruitment portals (e.g. Workday, Greenhouse, Lever, TCS, Wipro, Infosys, LinkedIn, Naukri).")
+    if st.button("🔄 Check Inbox for Company Confirmation Emails"):
+        with st.spinner("Connecting to inbox and scanning for company confirmation messages..."):
+            company_emails = inbox_verifier.check_incoming_company_confirmations(limit=15)
+            if company_emails:
+                st.success(f"Found {len(company_emails)} confirmation / recruitment messages from employers!")
+                for em in company_emails:
+                    with st.expander(f"🏢 {em.get('subject')} (From: {em.get('from_sender')})"):
+                        st.write(f"**Sender**: `{em.get('from_sender')}`")
+                        st.write(f"**Date**: `{em.get('date')}`")
+                        st.info(em.get('snippet'))
+            else:
+                st.info("No recent recruitment acknowledgment emails found in your primary inbox yet. They will appear here automatically as companies process your applications!")
