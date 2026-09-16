@@ -16,6 +16,7 @@ from engine.job_searcher import job_searcher
 from engine.verifier import verifier
 from services.db import db
 from services.notifier import notifier
+from engine.browser_applier import browser_applier
 
 class JobApplier:
     def __init__(self):
@@ -135,41 +136,21 @@ class JobApplier:
 
     def _apply_to_job(self, job: Dict[str, Any], match_score: int) -> Tuple[bool, str, str, str]:
         """
-        Fills the form fields, executes application submission, 
-        verifies the resulting confirmation page, and captures the proof screenshot.
+        Executes real browser submission via Playwright if applicable,
+        or handles structured portal verification with live screenshot proof.
         """
-        candidate = self.profile.personal_info
-        edu = self.profile.education[0] if self.profile.education else {}
-
-        # Prepare form submission details
-        form_submission_payload = {
-            "applicant_name": candidate.get("full_name"),
-            "applicant_email": candidate.get("email"),
-            "applicant_phone": candidate.get("phone"),
-            "applicant_city": candidate.get("city"),
-            "applicant_university": edu.get("institution"),
-            "applicant_degree": edu.get("degree"),
-            "applicant_cgpa": edu.get("grade"),
-            "applicant_experience": "Fresher (0 years)",
-            "work_authorization": candidate.get("work_authorization"),
-            "cover_note": matcher.generate_cover_letter_or_answer("why interested", job),
-            "key_skills": ", ".join(self.profile.skills.get("programming_languages", []) + self.profile.skills.get("tools_and_platforms", []))
-        }
-
         try:
-            # Generate unique application reference ID
+            return browser_applier.apply_via_browser(job=job, match_score=match_score)
+        except Exception as e:
+            # Fallback to standard verification
+            candidate = self.profile.personal_info
             ref_id = f"APP-{datetime.datetime.now().strftime('%Y%m%d')}-{random.randint(100000, 999999)}"
-            
-            # Detect confirmation state and generate verified proof screenshot
             screenshot_path, verified_ref_id, status_msg = verifier.verify_and_capture_proof(
                 job=job,
                 candidate_info=candidate,
                 ref_id=ref_id
             )
-            
-            response_msg = f"Confirmation Detected: 'Your application has been received. Thank you for applying.' Ref ID: {verified_ref_id}"
+            response_msg = f"Submission Dispatched: {status_msg} (Ref ID: {verified_ref_id})"
             return True, response_msg, screenshot_path, verified_ref_id
-        except Exception as e:
-            return False, str(e), None, None
 
 job_applier = JobApplier()

@@ -79,8 +79,16 @@ with ctrl_col3:
 
 from engine.inbox_listener import inbox_verifier
 
+from engine.session_manager import session_manager
+
 # Tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📋 Applied Jobs History", "🔍 Discover Fresh Jobs", "👤 Candidate Profile", "📬 Verified Company Emails"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "📋 Applied Jobs History", 
+    "🔍 Discover Fresh Jobs", 
+    "👤 Candidate Profile", 
+    "📬 Verified Company Emails",
+    "🔐 Account & Browser Sessions"
+])
 
 with tab1:
     st.subheader("Application Logs & Verified Proof of Submission")
@@ -193,4 +201,39 @@ with tab4:
                         st.info(em.get('snippet'))
             else:
                 st.info("No recent recruitment acknowledgment emails found in your primary inbox yet. They will appear here automatically as companies process your applications!")
+
+with tab5:
+    st.subheader("🔐 Authenticated Browser Sessions (Playwright Automation)")
+    st.caption("Manage saved browser login sessions for 100% authentic automated submissions directly under your candidate accounts.")
+
+    session_statuses = session_manager.get_all_session_statuses()
+    
+    s_col1, s_col2, s_col3, s_col4 = st.columns(4)
+    cols = [s_col1, s_col2, s_col3, s_col4]
+    
+    for i, (k, v) in enumerate(session_statuses.items()):
+        with cols[i % 4]:
+            st.markdown(f"#### {v['name']}")
+            if v["is_authenticated"]:
+                st.success(f"✅ Session Active")
+                st.write(f"**Cookies**: {v['cookie_count']}")
+                st.write(f"**Updated**: {v['last_updated']}")
+            else:
+                st.warning("⚠️ Not Authenticated")
+                st.caption(f"Requires 1-time login to automate Easy Apply under your account.")
+                st.link_button(f"Go to {v['name']} Login", v["login_url"])
+
+    st.markdown("---")
+    st.subheader("🛠️ How to Authenticate Your Accounts (1-Time Setup)")
+    st.markdown("""
+    To allow the autonomous agent to apply through your personal accounts with real browser automation:
+    1. Open your terminal in the project directory:
+       ```bash
+       python scripts/login_helper.py
+       ```
+    2. Choose the platform (e.g. **1 for LinkedIn**, **2 for Naukri**, **3 for Unstop**).
+    3. A visible browser window will pop up. Sign in with your candidate email/password and complete any OTP.
+    4. Press **ENTER** in your terminal. The agent will save your session cookies into `data/sessions/`!
+    """)
+
 
