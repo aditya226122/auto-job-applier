@@ -37,6 +37,16 @@ ACTIVE_HOURS_START = int(os.getenv("ACTIVE_HOURS_START", "0"))   # 12:00 AM Midn
 ACTIVE_HOURS_END = int(os.getenv("ACTIVE_HOURS_END", "23"))      # 11:59 PM End of Day
 MIN_MATCH_SCORE = int(os.getenv("MIN_MATCH_SCORE", "60"))
 
+# Location Settings
+ONLY_INDIA = os.getenv("ONLY_INDIA", "True").lower() in ("true", "1", "yes")
+INDIAN_LOCATIONS = [
+    "india", "hyderabad", "bengaluru", "bangalore", "chennai", 
+    "visakhapatnam", "vizag", "pune", "mumbai", "noida", 
+    "gurugram", "gurgaon", "delhi", "delhi ncr", "kolkata", 
+    "coimbatore", "kakinada", "andhra pradesh", "telangana", 
+    "karnataka", "tamil nadu", "maharashtra", "kochi", "trivandrum", "thiruvananthapuram"
+]
+
 # Database
 DB_PATH = BASE_DIR / "data" / "job_applications.db"
 

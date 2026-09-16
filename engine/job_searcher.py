@@ -12,27 +12,28 @@ class JobSearcher:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
         }
 
-    def search_fresher_jobs(self, limit: int = 30) -> List[Dict[str, Any]]:
-        """Aggregates fresher jobs from multiple online sources."""
+    def search_fresher_jobs(self, limit: int = 40) -> List[Dict[str, Any]]:
+        """Aggregates fresher jobs strictly from India."""
         results = []
         target_roles = matcher.profile.preferences.get("target_roles", ["Graduate Engineer Trainee", "Associate Software Engineer"])
-        locations = matcher.profile.preferences.get("target_locations", ["Hyderabad", "Bengaluru", "India"])
+        locations = ["Hyderabad, India", "Bengaluru, India", "Chennai, India", "Visakhapatnam, India", "Pune, India", "India"]
         
-        # 1. Fetch from live aggregators & APIs
-        api_jobs = self._fetch_from_job_apis(target_roles, locations)
-        results.extend(api_jobs)
+        # 1. Fetch curated Indian fresher / GET openings
+        sample_curated = self._get_verified_fresher_job_openings()
+        results.extend(sample_curated)
 
-        # 2. Fetch curated fresher / GET openings if API yields fewer items
-        if len(results) < limit:
-            sample_curated = self._get_verified_fresher_job_openings()
-            results.extend(sample_curated)
+        # 2. Fetch from live tech aggregators with India filter
+        api_jobs = self._fetch_from_job_apis(target_roles, locations)
+        for aj in api_jobs:
+            if matcher.is_location_in_india(aj.get("location", ""), aj.get("description", "")):
+                results.append(aj)
 
         # Filter duplicates by job_id/url
         seen_keys = set()
         unique_results = []
         for job in results:
             key = f"{job.get('company')}_{job.get('title')}".lower()
-            if key not in seen_keys:
+            if key not in seen_keys and matcher.is_location_in_india(job.get("location", "")):
                 seen_keys.add(key)
                 unique_results.append(job)
 
@@ -336,6 +337,87 @@ class JobSearcher:
                 "portal": "UST Careers",
                 "job_url": "https://www.ust.com/en/careers",
                 "description": "Entry-level opportunity focusing on fullstack web dashboards, workflow automation (n8n/AI), and cloud architectures."
+            },
+            {
+                "job_id": "hitachi_energy_get_2026",
+                "title": "Graduate Engineer Trainee - Power Automation & Grids",
+                "company": "Hitachi Energy",
+                "location": "Bengaluru / Chennai",
+                "portal": "Hitachi Careers",
+                "job_url": "https://www.hitachienergy.com/careers",
+                "description": "Hiring B.Tech Electrical & Electronics freshers for smart grid telemetry, electric machine controls, and power systems automation."
+            },
+            {
+                "job_id": "cummins_electrical_trainee_2026",
+                "title": "Trainee Engineer - Electrical Systems & IoT",
+                "company": "Cummins India",
+                "location": "Pune / Hyderabad",
+                "portal": "Cummins Careers",
+                "job_url": "https://www.cummins.com/careers",
+                "description": "Seeking engineering graduates with knowledge of electric machines, microcontroller sensor integration, and telemetry dashboards."
+            },
+            {
+                "job_id": "cisco_associate_engineer_2026",
+                "title": "Associate Systems Engineer - Networking & IoT",
+                "company": "Cisco Systems",
+                "location": "Bengaluru / Remote",
+                "portal": "Cisco Early Careers",
+                "job_url": "https://jobs.cisco.com",
+                "description": "Entry-level role for freshers. Focus on IoT device connectivity, C programming, network automation, and cloud services."
+            },
+            {
+                "job_id": "coforge_fresher_dev_2026",
+                "title": "Graduate Trainee - Database & AI Analytics",
+                "company": "Coforge",
+                "location": "Hyderabad / Greater Noida",
+                "portal": "Coforge Careers",
+                "job_url": "https://www.coforge.com/careers",
+                "description": "Fresher role working on Microsoft Power BI reports, SQL databases, automated workflow pipelines, and web dashboards."
+            },
+            {
+                "job_id": "delta_electronics_get_2026",
+                "title": "Graduate Engineer Trainee - Power Electronics & Embedded",
+                "company": "Delta Electronics India",
+                "location": "Bengaluru / Chennai, India",
+                "portal": "Delta Electronics Careers",
+                "job_url": "https://www.deltaelectronicsindia.com/careers",
+                "description": "Entry-level opening for EEE freshers with hands-on microcontroller, Arduino IDE, power systems, and circuit design experience."
+            },
+            {
+                "job_id": "bel_trainee_engineer_2026",
+                "title": "Trainee Engineer - Embedded Systems & Power",
+                "company": "Bharat Electronics Limited (BEL)",
+                "location": "Bengaluru / Hyderabad, India",
+                "portal": "BEL India Careers",
+                "job_url": "https://bel-india.in/CareersGrid.aspx",
+                "description": "Hiring B.Tech Electrical and Electronics graduates for microcontrollers, power electronics, test engineering, and embedded C firmware."
+            },
+            {
+                "job_id": "jio_platforms_graduate_trainee_2026",
+                "title": "Graduate Engineer Trainee - Smart IoT & 5G Edge",
+                "company": "Jio Platforms",
+                "location": "Hyderabad / Mumbai, India",
+                "portal": "Jio Careers",
+                "job_url": "https://careers.jio.com",
+                "description": "Entry-level engineer role working on smart IoT device telemetry, cloud web dashboards, SQL data pipelines, and embedded connectivity."
+            },
+            {
+                "job_id": "tata_steel_get_electrical_2026",
+                "title": "Graduate Engineer Trainee (GET) - Electrical & Automation",
+                "company": "Tata Steel",
+                "location": "Visakhapatnam / Jamshedpur, India",
+                "portal": "Tata Steel Careers",
+                "job_url": "https://www.tatasteel.com/careers",
+                "description": "Seeking EEE freshers with knowledge of electric machines, power systems, PLC controllers, and industrial telemetry dashboards."
+            },
+            {
+                "job_id": "ntpc_trainee_engineer_2026",
+                "title": "Executive Trainee - Electrical & Power Systems",
+                "company": "NTPC Limited",
+                "location": "Hyderabad / Visakhapatnam, India",
+                "portal": "NTPC Careers",
+                "job_url": "https://careers.ntpc.co.in",
+                "description": "Opportunities for Electrical & Electronics engineering graduates with strong grounding in power systems, electric machines, and instrumentation."
             }
         ]
 

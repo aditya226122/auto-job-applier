@@ -53,13 +53,37 @@ class JobMatcher:
         # Essential fresher / entry-level keywords
         self.fresher_indicators = {"fresher", "entry level", "trainee", "graduate", "junior", "associate", "intern", "b.tech", "eee", "0-1"}
 
+    def is_location_in_india(self, location: str, description: str = "") -> bool:
+        """Strictly checks if a job listing is located in India."""
+        if not config.ONLY_INDIA:
+            return True
+
+        loc_text = f"{location} {description}".lower()
+
+        # Reject obvious international locations
+        non_india_keywords = [
+            "germany", "deutschland", "berlin", "munich", "münchen", "leipzig", "rottenburg", 
+            "hamburg", "frankfurt", "united states", "usa", "us", "united kingdom", "uk", "london", 
+            "canada", "australia", "singapore", "austria", "switzerland", "m/w/d", "d/w/m", "gmbh"
+        ]
+        if any(re.search(r'\b' + re.escape(kw) + r'\b', loc_text) for kw in non_india_keywords):
+            return False
+
+        # Must match Indian cities or country
+        return any(ind_loc in loc_text for ind_loc in config.INDIAN_LOCATIONS)
+
     def calculate_match_score(self, job: Dict[str, Any]) -> Tuple[int, str]:
         """Calculates relevance match score (0-100) and rationale for a job."""
         title = job.get("title", "").lower()
+        location = job.get("location", "")
         description = job.get("description", "").lower()
         combined_text = f"{title} {description} {job.get('company', '').lower()}"
 
-        score = 40  # baseline for verified fresher openings in target locations
+        # 1. Enforce Strict India Location Filter
+        if not self.is_location_in_india(location, description):
+            return 0, f"Rejected: Location '{location}' is outside India."
+
+        score = 40  # baseline for verified fresher openings in India
 
         # Bonus for target titles
         matched_roles = []
