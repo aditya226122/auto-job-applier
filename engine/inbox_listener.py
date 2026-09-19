@@ -17,7 +17,7 @@ class CompanyEmailVerifier:
     def check_incoming_company_confirmations(self, limit: int = 20) -> List[Dict[str, Any]]:
         """
         Connects to the email inbox and scans for incoming recruitment / ATS confirmation emails
-        from employers and job boards (e.g. Workday, Greenhouse, Lever, TCS, Infosys, Wipro, LinkedIn, Naukri).
+        from employers and enterprise career systems (e.g. Workday, Greenhouse, Lever, TCS, Infosys, Wipro, Siemens, ABB).
         """
         if not self.user or not self.password:
             print("[InboxVerifier] IMAP credentials not configured.")

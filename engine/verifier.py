@@ -16,7 +16,7 @@ class ConfirmationVerifier:
         """
         Detects confirmation page state, extracts reference ID, 
         and renders a high-definition proof screenshot showing verified submission status
-        with authentic platform badges (Unstop, LinkedIn, Naukri, Indeed, Direct ATS).
+        for Direct Company Portals and Open Enterprise ATS.
         """
         timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         display_time = datetime.datetime.now().strftime("%d %b %Y, %I:%M:%S %p")

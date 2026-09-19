@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 import time
 import datetime
@@ -50,7 +50,6 @@ class ATSBrowserApplier:
         last_name = "Boddu"
         email = personal_info.get("email", "udayalakshmiboddu83@gmail.com")
         phone = personal_info.get("phone", "9390299690")
-        linkedin_url = "https://www.linkedin.com/in/udaya-lakshmi-boddu"
 
         try:
             with sync_playwright() as p:
@@ -83,9 +82,9 @@ class ATSBrowserApplier:
 
                 # Detect Portal Platform Type
                 if "lever.co" in page_url_lower or "lever.co" in job_url:
-                    success, message = self._submit_lever_form(page, full_name, email, phone, linkedin_url)
+                    success, message = self._submit_lever_form(page, full_name, email, phone)
                 elif "greenhouse.io" in page_url_lower or "greenhouse.io" in job_url:
-                    success, message = self._submit_greenhouse_form(page, first_name, last_name, email, phone, linkedin_url)
+                    success, message = self._submit_greenhouse_form(page, first_name, last_name, email, phone)
                 elif "smartrecruiters.com" in page_url_lower or "smartrecruiters.com" in job_url:
                     success, message = self._submit_smartrecruiters_form(page, first_name, last_name, email, phone)
                 elif "ashbyhq.com" in page_url_lower or "ashbyhq.com" in job_url:
@@ -110,7 +109,7 @@ class ATSBrowserApplier:
             print(f"[ATSApplier Error] {e}")
             return False, f"ATS Submission Exception: {e}", None, None
 
-    def _submit_lever_form(self, page: Page, name: str, email: str, phone: str, linkedin: str) -> Tuple[bool, str]:
+    def _submit_lever_form(self, page: Page, name: str, email: str, phone: str) -> Tuple[bool, str]:
         """Submits candidate profile and resume to Lever.co ATS."""
         try:
             if "/apply" not in page.url:
@@ -145,11 +144,6 @@ class ATSBrowserApplier:
             if org_input:
                 org_input.fill("JNTUK (B.Tech EEE - 2024)")
 
-            # 6. Fill LinkedIn URL
-            li_input = page.query_selector("input[name*='LinkedIn'], input[name*='urls[LinkedIn]']")
-            if li_input:
-                li_input.fill(linkedin)
-
             # Submit
             submit_btn = page.query_selector("button#btn-submit, button[type='submit'], button:has-text('Submit application')")
             if not submit_btn:
@@ -165,7 +159,7 @@ class ATSBrowserApplier:
         except Exception as e:
             return False, f"Lever form error: {str(e)[:60]}"
 
-    def _submit_greenhouse_form(self, page: Page, first_name: str, last_name: str, email: str, phone: str, linkedin: str) -> Tuple[bool, str]:
+    def _submit_greenhouse_form(self, page: Page, first_name: str, last_name: str, email: str, phone: str) -> Tuple[bool, str]:
         """Submits candidate profile and resume to Greenhouse.io ATS."""
         try:
             file_input = page.query_selector("input[type='file'], input#resume_file, input[name*='resume']")

@@ -8,3 +8,5 @@ env/
 venv/
 .streamlit/
 *.log
+data/screenshots/
+data/*.db
