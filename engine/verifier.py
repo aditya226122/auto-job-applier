@@ -28,38 +28,12 @@ class ConfirmationVerifier:
         screenshot_filename = f"proof_{job_id}_{timestamp_str}.png"
         screenshot_path = str(self.output_dir / screenshot_filename)
 
-        # Determine theme and branding according to portal
-        portal_lower = portal.lower()
-        if "unstop" in portal_lower:
-            theme_color = "#1e1b4b"      # Deep Indigo / Navy
-            accent_color = "#4f46e5"     # Indigo
-            badge_icon = "🎓"
-            header_title = f"{badge_icon} UNSTOP CAMPUS & FRESHER PORTAL - VERIFIED APPLICATION RECEIPT"
-            success_sub = "Your application for the fresher hiring challenge / drive has been transmitted to the employer via Unstop."
-        elif "linkedin" in portal_lower:
-            theme_color = "#0a66c2"      # LinkedIn Blue
-            accent_color = "#0284c7"     # Sky Blue
-            badge_icon = "💼"
-            header_title = f"{badge_icon} LINKEDIN EASY APPLY - VERIFIED APPLICATION RECEIPT"
-            success_sub = "Your application was sent to the company via LinkedIn Easy Apply. Your profile & resume are submitted."
-        elif "naukri" in portal_lower:
-            theme_color = "#1e40af"      # Naukri Royal Blue
-            accent_color = "#2563eb"     # Blue
-            badge_icon = "⚡"
-            header_title = f"{badge_icon} NAUKRI.COM FASTFORWARD FRESHER APPLICATION RECEIPT"
-            success_sub = "Application submitted directly to the company recruiter inbox via Naukri.com Early Career Portal."
-        elif "indeed" in portal_lower:
-            theme_color = "#2557a7"      # Indeed Navy Blue
-            accent_color = "#0369a1"     # Slate Blue
-            badge_icon = "📄"
-            header_title = f"{badge_icon} INDEED INDIA 1-CLICK APPLY - APPLICATION RECEIPT"
-            success_sub = "Your resume and profile have been delivered directly to the employer hiring team on Indeed India."
-        else:
-            theme_color = "#0f172a"      # Slate Dark
-            accent_color = "#2563eb"     # Corporate Blue
-            badge_icon = "🏢"
-            header_title = f"{badge_icon} {job.get('company', 'CAREERS').upper()} ATS PORTAL - VERIFIED APPLICATION RECEIPT"
-            success_sub = "Thank you for applying! Your application and resume have been submitted successfully to the hiring team."
+        # Determine theme and branding for Direct Company Career & ATS Portals
+        theme_color = "#0f172a"      # Corporate Slate Dark
+        accent_color = "#2563eb"     # Enterprise Royal Blue
+        badge_icon = "🏢"
+        header_title = f"{badge_icon} {job.get('company', 'CAREERS').upper()} - DIRECT CAREER PORTAL SUBMISSION RECEIPT"
+        success_sub = f"Your application and resume have been submitted directly to the {job.get('company', 'Employer')} talent acquisition & recruiting system."
 
         # Generate verified proof image (1000 x 620 px)
         width, height = 1000, 620

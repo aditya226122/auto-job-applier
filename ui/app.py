@@ -79,15 +79,12 @@ with ctrl_col3:
 
 from engine.inbox_listener import inbox_verifier
 
-from engine.session_manager import session_manager
-
 # Tabs
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4 = st.tabs([
     "📋 Applied Jobs History", 
-    "🔍 Discover Fresh Jobs", 
+    "🔍 Discover Company Portals", 
     "👤 Candidate Profile", 
-    "📬 Verified Company Emails",
-    "🔐 Account & Browser Sessions"
+    "📬 Verified Company Emails"
 ])
 
 with tab1:
@@ -103,13 +100,13 @@ with tab1:
         date_options = ["All Dates"] + unique_dates
 
         unique_portals = sorted([str(p) for p in df["portal"].dropna().unique() if str(p).strip() != ""])
-        portal_options = ["All Platforms"] + unique_portals
+        portal_options = ["All Portals"] + unique_portals
         
         with filter_col1:
             selected_date = st.selectbox("📅 Filter by Applied Date:", options=date_options, index=0)
 
         with filter_col2:
-            selected_portal = st.selectbox("🌐 Filter by Platform:", options=portal_options, index=0)
+            selected_portal = st.selectbox("🏢 Filter by Company Portal:", options=portal_options, index=0)
             
         with filter_col3:
             status_options = ["All Statuses"] + sorted([str(s) for s in df["status"].dropna().unique()])
@@ -122,7 +119,7 @@ with tab1:
         filtered_df = df.copy()
         if selected_date != "All Dates":
             filtered_df = filtered_df[filtered_df["applied_date"] == selected_date]
-        if selected_portal != "All Platforms":
+        if selected_portal != "All Portals":
             filtered_df = filtered_df[filtered_df["portal"] == selected_portal]
         if selected_status != "All Statuses":
             filtered_df = filtered_df[filtered_df["status"] == selected_status]
@@ -133,19 +130,19 @@ with tab1:
             ]
 
         # Filtered Count Indicator
-        st.caption(f"Showing **{len(filtered_df)}** records (out of {len(df)} total recorded across Unstop, LinkedIn, Naukri, Indeed, and ATS).")
+        st.caption(f"Showing **{len(filtered_df)}** records across direct company career portals & ATS systems.")
 
         cols_to_show = [c for c in ["id", "title", "company", "location", "portal", "match_score", "reference_id", "status", "applied_date", "email_sent_status"] if c in filtered_df.columns]
         st.dataframe(filtered_df[cols_to_show], use_container_width=True)
         
         # --- Visual Confirmation & Proof Gallery for Filtered Records ---
-        st.markdown(f"### 📸 Visual Confirmation & Proof Gallery {f'({selected_portal})' if selected_portal != 'All Platforms' else ''}")
+        st.markdown(f"### 📸 Visual Confirmation & Proof Gallery {f'({selected_portal})' if selected_portal != 'All Portals' else ''}")
         filtered_records = filtered_df.to_dict(orient="records")
         proof_records = [app for app in filtered_records if app.get("status") == "APPLIED" and app.get("screenshot_path")]
         
         if proof_records:
             for app in proof_records:
-                with st.expander(f"✔ Proof: {app.get('title')} @ {app.get('company')} [{app.get('portal', 'Verified')}] - {app.get('applied_date')}"):
+                with st.expander(f"✔ Proof: {app.get('title')} @ {app.get('company')} [{app.get('portal', 'Direct Portal')}] - {app.get('applied_date')}"):
                     col_info, col_img = st.columns([1, 2])
                     with col_info:
                         st.write(f"**Company**: {app.get('company')}")
@@ -158,21 +155,20 @@ with tab1:
                         st.write(f"**Email Status**: {app.get('email_sent_status')}")
                     with col_img:
                         if os.path.exists(app.get("screenshot_path", "")):
-                            st.image(app.get("screenshot_path"), caption=f"Verified Confirmation Screenshot - {app.get('company')} ({app.get('portal')})")
+                            st.image(app.get("screenshot_path"), caption=f"Verified Submission Receipt - {app.get('company')} ({app.get('portal')})")
         else:
             st.info(f"No proof screenshots found for the selected filter ({selected_portal} / {selected_date} / {selected_status}).")
     else:
         st.info("No job applications logged yet. Click 'Trigger Hourly Run' above to start!")
 
 with tab2:
-    st.subheader("🌐 Explore & Match Opportunities by Platform")
-    platform_choice = st.radio("Select Platform to Discover:", ["All Platforms", "Unstop", "LinkedIn", "Naukri", "Indeed", "Direct ATS"], horizontal=True)
+    st.subheader("🏢 Explore Direct Company Career Openings")
+    st.caption("Fresh engineering graduate opportunities aggregated directly from official company career portals in India.")
     
-    if st.button("🔄 Search Live Matched Jobs"):
-        with st.spinner(f"Querying listings from {platform_choice}..."):
-            filter_query = None if platform_choice == "All Platforms" else platform_choice
-            fresh_jobs = job_searcher.search_fresher_jobs(limit=20, platform_filter=filter_query)
-            st.success(f"Found {len(fresh_jobs)} matching fresher roles on {platform_choice}!")
+    if st.button("🔄 Search Verified Company Portals"):
+        with st.spinner(f"Querying verified direct career portals..."):
+            fresh_jobs = job_searcher.search_fresher_jobs(limit=25)
+            st.success(f"Found {len(fresh_jobs)} matching fresher roles on Direct Company Portals!")
             for j in fresh_jobs:
                 score, reason = matcher.calculate_match_score(j)
                 with st.expander(f"📌 [{j.get('portal')}] {j.get('title')} - {j.get('company')} ({score}% Match)"):
@@ -180,7 +176,7 @@ with tab2:
                     st.write(f"**Platform / Portal**: `{j.get('portal')}`")
                     st.write(f"**Match Analysis**: {reason}")
                     st.write(f"**Description**: {j.get('description')}")
-                    st.link_button(f"Open Listing on {j.get('portal')}", j.get("job_url", "#"))
+                    st.link_button(f"Open Official {j.get('company')} Career Page", j.get("job_url", "#"))
 
 with tab3:
     st.subheader("Loaded Candidate Resume Profile")
@@ -188,7 +184,7 @@ with tab3:
 
 with tab4:
     st.subheader("📬 Verified Company-Side Confirmation Emails")
-    st.caption("Live scan of your candidate inbox for official acknowledgment emails from company recruitment portals (e.g. Workday, Greenhouse, Lever, TCS, Wipro, Infosys, LinkedIn, Naukri, Unstop).")
+    st.caption("Live scan of your candidate inbox for official acknowledgment emails from company recruitment portals (e.g. TCS, Wipro, Infosys, Robert Bosch, LTTS, Siemens, ABB, Tata Power).")
     if st.button("🔄 Check Inbox for Company Confirmation Emails"):
         with st.spinner("Connecting to inbox and scanning for company confirmation messages..."):
             company_emails = inbox_verifier.check_incoming_company_confirmations(limit=15)
@@ -201,39 +197,5 @@ with tab4:
                         st.info(em.get('snippet'))
             else:
                 st.info("No recent recruitment acknowledgment emails found in your primary inbox yet. They will appear here automatically as companies process your applications!")
-
-with tab5:
-    st.subheader("🔐 Authenticated Browser Sessions (Playwright Automation)")
-    st.caption("Manage saved browser login sessions for 100% authentic automated submissions directly under your candidate accounts.")
-
-    session_statuses = session_manager.get_all_session_statuses()
-    
-    s_col1, s_col2, s_col3, s_col4 = st.columns(4)
-    cols = [s_col1, s_col2, s_col3, s_col4]
-    
-    for i, (k, v) in enumerate(session_statuses.items()):
-        with cols[i % 4]:
-            st.markdown(f"#### {v['name']}")
-            if v["is_authenticated"]:
-                st.success(f"✅ Session Active")
-                st.write(f"**Cookies**: {v['cookie_count']}")
-                st.write(f"**Updated**: {v['last_updated']}")
-            else:
-                st.warning("⚠️ Not Authenticated")
-                st.caption(f"Requires 1-time login to automate Easy Apply under your account.")
-                st.link_button(f"Go to {v['name']} Login", v["login_url"])
-
-    st.markdown("---")
-    st.subheader("🛠️ How to Authenticate Your Accounts (1-Time Setup)")
-    st.markdown("""
-    To allow the autonomous agent to apply through your personal accounts with real browser automation:
-    1. Open your terminal in the project directory:
-       ```bash
-       python scripts/login_helper.py
-       ```
-    2. Choose the platform (e.g. **1 for LinkedIn**, **2 for Naukri**, **3 for Unstop**).
-    3. A visible browser window will pop up. Sign in with your candidate email/password and complete any OTP.
-    4. Press **ENTER** in your terminal. The agent will save your session cookies into `data/sessions/`!
-    """)
 
 
