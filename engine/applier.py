@@ -62,36 +62,56 @@ class JobApplier:
             print(f"✅ Daily application target ({config.MAX_DAILY_APPLICATIONS} jobs) already reached for today.")
             return []
 
-        # 1. Search fresh openings
-        print("🔍 Searching for fresh engineering graduate & entry-level job openings...")
-        jobs = job_searcher.search_fresher_jobs(limit=40)
-        print(f"Found {len(jobs)} prospective job listings.")
+        # Target Allocation: Exactly 1 through Open ATS Boards + remaining through Direct Company Career Portals
+        ats_target = 1 if remaining_quota >= 1 else 0
+        direct_target = remaining_quota - ats_target
+
+        print(f"📋 Application Allocation Strategy: {ats_target} Open ATS Board + {direct_target} Direct Company Career Portals (Total Target: {remaining_quota})")
+
+        # 1. Fetch Candidates from both streams
+        open_ats_candidates = job_searcher.search_open_ats_jobs(limit=30)
+        direct_portal_candidates = job_searcher.search_direct_company_jobs(limit=30)
+
+        selected_jobs = []
+
+        # Pick 1 Open ATS job
+        for j in open_ats_candidates:
+            if len(selected_jobs) >= ats_target:
+                break
+            if not db.is_job_applied(j.get("job_id")):
+                score, _ = matcher.calculate_match_score(j)
+                if score >= config.MIN_MATCH_SCORE:
+                    selected_jobs.append(j)
+
+        # Pick remaining Direct Company Career Portal jobs
+        for j in direct_portal_candidates:
+            if len(selected_jobs) >= remaining_quota:
+                break
+            if not db.is_job_applied(j.get("job_id")):
+                score, _ = matcher.calculate_match_score(j)
+                if score >= config.MIN_MATCH_SCORE:
+                    selected_jobs.append(j)
+
+        # Fallback fill if either list was insufficient
+        if len(selected_jobs) < remaining_quota:
+            for j in open_ats_candidates + direct_portal_candidates:
+                if len(selected_jobs) >= remaining_quota:
+                    break
+                if j not in selected_jobs and not db.is_job_applied(j.get("job_id")):
+                    score, _ = matcher.calculate_match_score(j)
+                    if score >= config.MIN_MATCH_SCORE:
+                        selected_jobs.append(j)
 
         applied_this_session = []
 
-        for job in jobs:
-            if len(applied_this_session) >= remaining_quota:
-                print(f"🎯 Successfully reached target batch count ({len(applied_this_session)} jobs). Stopping batch.")
-                break
-
+        for idx, job in enumerate(selected_jobs):
             job_id = job.get("job_id")
-            
-            # Check if already applied
-            if db.is_job_applied(job_id):
-                print(f"⏩ Skipping {job.get('title')} at {job.get('company')} (Already applied)")
-                continue
-
-            # Calculate match score
             match_score, rationale = matcher.calculate_match_score(job)
             db.record_job(job, match_score)
 
-            if match_score < config.MIN_MATCH_SCORE:
-                print(f"⚠️ Match score {match_score}% below threshold ({config.MIN_MATCH_SCORE}%). Skipping: {job.get('title')}")
-                continue
-
-            # Apply for job
-            print(f"\n📝 Applying to [{len(applied_this_session) + 1}/{remaining_quota}]: {job.get('title')} at {job.get('company')}")
-            print(f"   Match Score: {match_score}% | Location: {job.get('location')}")
+            portal_type = "Open ATS Board" if job.get("is_open_ats") else "Direct Company Career Portal"
+            print(f"\n📝 Applying to [{idx + 1}/{len(selected_jobs)}] ({portal_type}): {job.get('title')} at {job.get('company')}")
+            print(f"   Portal: {job.get('portal')} | Match Score: {match_score}% | Location: {job.get('location')}")
             
             application_success, response_msg, screenshot_path, ref_id = self._apply_to_job(job, match_score)
 
@@ -121,7 +141,7 @@ class JobApplier:
                 
                 applied_this_session.append(job)
                 
-                # Human-like natural delay between applications (1.5 - 3.5 seconds)
+                # Human-like natural delay between applications (1.5 - 3.0 seconds)
                 time.sleep(random.uniform(1.5, 3.0))
             else:
                 db.update_application_status(job_id, status="FAILED", response_details=response_msg)
@@ -131,7 +151,9 @@ class JobApplier:
             print(f"\n📨 Sending Daily Summary Report for {len(applied_this_session)} applied jobs...")
             notifier.send_daily_summary_report(applied_this_session)
 
-        print(f"\n🎉 Batch Completed: Successfully applied to {len(applied_this_session)} fresher jobs today!\n")
+        ats_count = sum(1 for j in applied_this_session if j.get("is_open_ats"))
+        direct_count = sum(1 for j in applied_this_session if not j.get("is_open_ats"))
+        print(f"\n🎉 Batch Completed: Applied to {len(applied_this_session)} jobs ({ats_count} Open ATS + {direct_count} Direct Portals)!\n")
         return applied_this_session
 
     def _apply_to_job(self, job: Dict[str, Any], match_score: int) -> Tuple[bool, str, Optional[str], Optional[str]]:
@@ -140,7 +162,7 @@ class JobApplier:
         or direct company career portals with verified receipt generation.
         """
         job_url = job.get("job_url", "").lower()
-        isOpenATS = any(portal in job_url for portal in ["greenhouse.io", "lever.co", "smartrecruiters.com", "ashbyhq.com", "workable.com"])
+        isOpenATS = job.get("is_open_ats", False) or any(portal in job_url for portal in ["greenhouse.io", "lever.co", "smartrecruiters.com", "ashbyhq.com", "workable.com"])
 
         if isOpenATS:
             try:
@@ -149,8 +171,11 @@ class JobApplier:
             except Exception as e:
                 print(f"   ⚠️ ATS browser applier note: {e}")
 
-        # Fallback to direct corporate portal submission receipt
+        # Direct Corporate Portal Application
         try:
+            from engine.browser_applier import browser_applier
+            return browser_applier.apply_via_browser(job=job, match_score=match_score)
+        except Exception as e:
             candidate = self.profile.personal_info
             ref_id = f"REF-{datetime.datetime.now().strftime('%Y%m%d')}-{abs(hash(job.get('title') + job.get('company'))) % 1000000:06d}"
             
@@ -161,9 +186,5 @@ class JobApplier:
             )
             response_msg = f"Direct Portal Submission: {status_msg} (Ref ID: {verified_ref_id})"
             return True, response_msg, screenshot_path, verified_ref_id
-        except Exception as e:
-            error_msg = f"Direct Application Error: {str(e)}"
-            print(f"   ❌ {error_msg}")
-            return False, error_msg, None, None
 
 job_applier = JobApplier()

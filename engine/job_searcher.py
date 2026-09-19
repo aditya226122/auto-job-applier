@@ -47,6 +47,34 @@ class JobSearcher:
         random.shuffle(unique_results)
         return unique_results[:limit]
 
+    def search_open_ats_jobs(self, limit: int = 20) -> List[Dict[str, Any]]:
+        """Discovers jobs specifically from Open ATS Boards (Greenhouse, Lever, SmartRecruiters, Ashby)."""
+        results = []
+        results.extend(self._fetch_live_greenhouse_openings())
+        results.extend(self._fetch_live_ats_openings())
+        seen_keys = set()
+        unique = []
+        for j in results:
+            key = f"{j.get('company')}_{j.get('title')}".lower()
+            if key not in seen_keys:
+                seen_keys.add(key)
+                unique.append(j)
+        random.shuffle(unique)
+        return unique[:limit]
+
+    def search_direct_company_jobs(self, limit: int = 20) -> List[Dict[str, Any]]:
+        """Discovers jobs specifically from Direct Company Career Portals."""
+        jobs = self._get_direct_company_openings()
+        seen_keys = set()
+        unique = []
+        for j in jobs:
+            key = f"{j.get('company')}_{j.get('title')}".lower()
+            if key not in seen_keys:
+                seen_keys.add(key)
+                unique.append(j)
+        random.shuffle(unique)
+        return unique[:limit]
+
     def _fetch_live_greenhouse_openings(self) -> List[Dict[str, Any]]:
         """Queries live public Greenhouse job boards for active Graduate & Entry-Level Engineering roles."""
         greenhouse_companies = [
@@ -93,7 +121,9 @@ class JobSearcher:
                                 "location": loc_name,
                                 "portal": f"{comp_name} Greenhouse ATS",
                                 "job_url": j.get("absolute_url", f"https://job-boards.greenhouse.io/{slug}/jobs/{j.get('id')}"),
-                                "description": f"Live Graduate/Entry-Level opportunity at {comp_name}. Location: {loc_name}. Open for engineering graduates with knowledge of programming, systems, and technical troubleshooting."
+                                "description": f"Live Graduate/Entry-Level opportunity at {comp_name}. Location: {loc_name}. Open for engineering graduates with knowledge of programming, systems, and technical troubleshooting.",
+                                "is_open_ats": True,
+                                "source_type": "open_ats"
                             })
             except Exception:
                 continue
@@ -119,7 +149,9 @@ class JobSearcher:
                             "location": location or "India / Remote",
                             "portal": f"{item.get('company_name', 'Direct')} ATS Portal",
                             "job_url": item.get("url", "https://careers.direct.com"),
-                            "description": item.get("description", "")[:400]
+                            "description": item.get("description", "")[:400],
+                            "is_open_ats": True,
+                            "source_type": "open_ats"
                         })
         except Exception as e:
             pass
@@ -127,7 +159,7 @@ class JobSearcher:
 
     def _get_direct_company_openings(self) -> List[Dict[str, Any]]:
         """Provides verified direct company career portal listings across Top Tier 1 & Engineering firms in India."""
-        return [
+        openings = [
             {
                 "job_id": "tcs_nqt_get_2026",
                 "title": "Graduate Trainee Engineer - IoT & Embedded",
@@ -327,6 +359,10 @@ class JobSearcher:
                 "description": "Entry-level candidate will build automated workflows, manage SQL database queries, and support web dashboards."
             }
         ]
+        for op in openings:
+            op["is_open_ats"] = False
+            op["source_type"] = "direct_portal"
+        return openings
 
 job_searcher = JobSearcher()
 
