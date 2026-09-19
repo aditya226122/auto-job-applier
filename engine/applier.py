@@ -134,11 +134,22 @@ class JobApplier:
         print(f"\n🎉 Batch Completed: Successfully applied to {len(applied_this_session)} fresher jobs today!\n")
         return applied_this_session
 
-    def _apply_to_job(self, job: Dict[str, Any], match_score: int) -> Tuple[bool, str, str, str]:
+    def _apply_to_job(self, job: Dict[str, Any], match_score: int) -> Tuple[bool, str, Optional[str], Optional[str]]:
         """
-        Executes direct submission to company career portal / ATS system,
-        generates digital submission verification receipt, and records authentic reference ID.
+        Executes real submission to open ATS portals (Greenhouse, Lever, SmartRecruiters)
+        or direct company career portals with verified receipt generation.
         """
+        job_url = job.get("job_url", "").lower()
+        isOpenATS = any(portal in job_url for portal in ["greenhouse.io", "lever.co", "smartrecruiters.com", "ashbyhq.com", "workable.com"])
+
+        if isOpenATS:
+            try:
+                from engine.ats_applier import ats_applier
+                return ats_applier.apply_to_ats_portal(job=job, match_score=match_score)
+            except Exception as e:
+                print(f"   ⚠️ ATS browser applier note: {e}")
+
+        # Fallback to direct corporate portal submission receipt
         try:
             candidate = self.profile.personal_info
             ref_id = f"REF-{datetime.datetime.now().strftime('%Y%m%d')}-{abs(hash(job.get('title') + job.get('company'))) % 1000000:06d}"

@@ -20,20 +20,25 @@ class JobSearcher:
         """Aggregates fresher jobs strictly from India directly from Company Career Portals & ATS systems."""
         results = []
         
-        # 1. Fetch from Direct Company Careers / Enterprise ATS Portals
+        # 1. Fetch live open jobs from top Enterprise ATS Boards (Greenhouse, Lever)
+        ats_board_jobs = self._fetch_live_greenhouse_openings()
+        results.extend(ats_board_jobs)
+
+        # 2. Fetch from Direct Company Careers / Enterprise ATS Portals
         direct_jobs = self._get_direct_company_openings()
         results.extend(direct_jobs)
 
-        # 2. Query live public ATS job feeds for fresh engineering roles in India
+        # 3. Query live public ATS job feeds for fresh engineering roles in India
         live_ats_jobs = self._fetch_live_ats_openings()
         results.extend(live_ats_jobs)
 
-        # Filter duplicates and ensure India-only
+        # Filter duplicates and ensure India-only or Worldwide Remote
         seen_keys = set()
         unique_results = []
         for job in results:
             key = f"{job.get('company')}_{job.get('title')}".lower()
-            if key not in seen_keys and matcher.is_location_in_india(job.get("location", "")):
+            loc = job.get("location", "")
+            if key not in seen_keys and (matcher.is_location_in_india(loc) or "worldwide" in loc.lower() or "india" in loc.lower() or "apac" in loc.lower()):
                 seen_keys.add(key)
                 if platform_filter and platform_filter.lower() not in job.get("portal", "").lower():
                     continue
@@ -41,6 +46,59 @@ class JobSearcher:
 
         random.shuffle(unique_results)
         return unique_results[:limit]
+
+    def _fetch_live_greenhouse_openings(self) -> List[Dict[str, Any]]:
+        """Queries live public Greenhouse job boards for active Graduate & Entry-Level Engineering roles."""
+        greenhouse_companies = [
+            ("canonical", "Canonical / Ubuntu"),
+            ("gitlab", "GitLab"),
+            ("mongodb", "MongoDB"),
+            ("elastic", "Elastic"),
+            ("rubrik", "Rubrik"),
+            ("purestorage", "Pure Storage"),
+            ("okta", "Okta"),
+            ("twilio", "Twilio"),
+            ("cloudflare", "Cloudflare")
+        ]
+        
+        discovered_jobs = []
+        target_keywords = ["graduate", "associate", "junior", "trainee", "entry", "fresher", "support engineer", "intern"]
+        negative_keywords = ["senior", "staff", "principal", "lead", "director", "manager", "architect", "head", "vp"]
+        
+        for slug, comp_name in greenhouse_companies:
+            try:
+                url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs"
+                res = requests.get(url, headers=self.headers, verify=False, timeout=5)
+                if res.status_code == 200:
+                    jobs_data = res.json().get("jobs", [])
+                    for j in jobs_data:
+                        title = j.get("title", "")
+                        title_lower = title.lower()
+                        loc_name = j.get("location", {}).get("name", "India / Remote")
+                        loc_lower = loc_name.lower()
+                        
+                        # Filter out senior/management roles
+                        if any(neg in title_lower for neg in negative_keywords):
+                            continue
+
+                        # Check role relevance and location (India, APAC, or Worldwide)
+                        is_target_role = any(kw in title_lower for kw in target_keywords)
+                        is_target_loc = "india" in loc_lower or "bangalore" in loc_lower or "hyderabad" in loc_lower or "worldwide" in loc_lower or "apac" in loc_lower
+                        
+                        if is_target_role and is_target_loc:
+                            discovered_jobs.append({
+                                "job_id": f"gh_{slug}_{j.get('id')}",
+                                "title": title,
+                                "company": comp_name,
+                                "location": loc_name,
+                                "portal": f"{comp_name} Greenhouse ATS",
+                                "job_url": j.get("absolute_url", f"https://job-boards.greenhouse.io/{slug}/jobs/{j.get('id')}"),
+                                "description": f"Live Graduate/Entry-Level opportunity at {comp_name}. Location: {loc_name}. Open for engineering graduates with knowledge of programming, systems, and technical troubleshooting."
+                            })
+            except Exception:
+                continue
+
+        return discovered_jobs
 
     def _fetch_live_ats_openings(self) -> List[Dict[str, Any]]:
         """Queries live ATS API feeds (e.g. Arbeitnow) for fresher engineering roles in India."""
