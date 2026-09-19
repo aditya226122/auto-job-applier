@@ -2,7 +2,7 @@ import time
 import random
 import sys
 import datetime
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 
 if sys.platform == "win32" and sys.stdout.encoding != "utf-8":
     try:
