@@ -21,21 +21,23 @@ class EmailNotifier:
             print(f"[EmailNotifier] Email notifications disabled in config.")
             return False
 
+        if not screenshot_path or not os.path.exists(screenshot_path):
+            print(f"[EmailNotifier] ❌ Refusing to send alert: Missing genuine confirmation screenshot for {job.get('title')}")
+            return False
+
         ref_id_display = reference_id or f"APP-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
         subject = f"🚀 [Applied & Verified] {job.get('title')} at {job.get('company')} ({match_score}% Match)"
         applied_time = datetime.datetime.now().strftime("%d %b %Y, %I:%M %p")
         
-        screenshot_html = ""
-        if screenshot_path and os.path.exists(screenshot_path):
-            screenshot_html = f"""
-            <div style="margin-top: 25px; border-top: 2px dashed #cbd5e1; padding-top: 20px;">
-                <h3 style="margin: 0 0 10px 0; color: #1e293b; font-size: 16px;">📸 Proof of Submission (Live Screenshot):</h3>
-                <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">The confirmation page below was detected and captured directly by the agent upon submission:</p>
-                <div style="border: 2px solid #2563eb; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-                    <img src="cid:proof_screenshot" alt="Application Proof Screenshot" style="width: 100%; max-width: 100%; display: block;" />
-                </div>
+        screenshot_html = f"""
+        <div style="margin-top: 25px; border-top: 2px dashed #cbd5e1; padding-top: 20px;">
+            <h3 style="margin: 0 0 10px 0; color: #1e293b; font-size: 16px;">📸 Proof of Submission (Live Screenshot):</h3>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">The confirmation page below was detected and captured directly by the agent upon submission:</p>
+            <div style="border: 2px solid #2563eb; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                <img src="cid:proof_screenshot" alt="Application Proof Screenshot" style="width: 100%; max-width: 100%; display: block;" />
             </div>
-            """
+        </div>
+        """
 
         html_content = f"""
         <!DOCTYPE html>
