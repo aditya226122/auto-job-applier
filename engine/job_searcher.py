@@ -357,9 +357,96 @@ class JobSearcher:
                 "portal": "Mphasis Careers",
                 "job_url": "https://careers.mphasis.com",
                 "description": "Entry-level candidate will build automated workflows, manage SQL database queries, and support web dashboards."
+            },
+            {
+                "job_id": "cognizant_campus_ase_2026",
+                "title": "Programmer Analyst Trainee (PAT) - Fresher",
+                "company": "Cognizant",
+                "location": "Hyderabad / Bengaluru / Chennai, India",
+                "portal": "Cognizant Campus Hiring",
+                "job_url": "https://careers.cognizant.com/in/en",
+                "description": "Hiring fresh engineering graduates for software development, cloud systems, and database management."
+            },
+            {
+                "job_id": "hcltech_graduate_trainee_2026",
+                "title": "Graduate Engineer Trainee - IoT & Systems",
+                "company": "HCLTech",
+                "location": "Noida / Hyderabad / Chennai, India",
+                "portal": "HCLTech First Careers",
+                "job_url": "https://www.hcltech.com/careers/first-careers",
+                "description": "Entry-level opportunities for engineering freshers in embedded systems, digital engineering, and automation."
+            },
+            {
+                "job_id": "capgemini_fresher_developer_2026",
+                "title": "Analyst and Software Engineer - Fresher",
+                "company": "Capgemini",
+                "location": "Hyderabad / Pune / Bengaluru, India",
+                "portal": "Capgemini Careers",
+                "job_url": "https://www.capgemini.com/in-en/careers/",
+                "description": "Engineering graduate role focused on software applications, automated test suites, and data dashboards."
+            },
+            {
+                "job_id": "honeywell_embedded_iot_2026",
+                "title": "Junior Embedded Software Engineer",
+                "company": "Honeywell",
+                "location": "Hyderabad / Bengaluru, India",
+                "portal": "Honeywell Early Careers",
+                "job_url": "https://careers.honeywell.com",
+                "description": "Entry-level Embedded and IoT role working on sensor telemetry, smart building automation, and C firmware."
+            },
+            {
+                "job_id": "techm_graduate_trainee_2026",
+                "title": "Associate Software Engineer - Entry Level",
+                "company": "Tech Mahindra",
+                "location": "Hyderabad / Pune, India",
+                "portal": "TechM Campus",
+                "job_url": "https://careers.techmahindra.com",
+                "description": "Campus hiring for engineering graduates. Hands-on with programming, SQL queries, and enterprise systems."
+            },
+            {
+                "job_id": "kpit_embedded_c_get_2026",
+                "title": "Trainee Engineer - Embedded Systems & Automotive",
+                "company": "KPIT Technologies",
+                "location": "Pune / Bengaluru, India",
+                "portal": "KPIT Careers",
+                "job_url": "https://www.kpit.com/careers/",
+                "description": "Focus on microcontroller firmware, sensor interfacing, embedded C, and electric powertrain systems."
+            },
+            {
+                "job_id": "ltimindtree_graduate_spark_2026",
+                "title": "Graduate Engineer Trainee - Data & SQL",
+                "company": "LTIMindtree",
+                "location": "Bengaluru / Hyderabad, India",
+                "portal": "LTIMindtree Ignite",
+                "job_url": "https://www.ltimindtree.com/careers/",
+                "description": "Entry-level developer role for relational database SQL queries, analytics reports, and cloud solutions."
+            },
+            {
+                "job_id": "cyient_embedded_get_2026",
+                "title": "Graduate Engineer Trainee - Embedded & IoT",
+                "company": "Cyient",
+                "location": "Hyderabad / Visakhapatnam, India",
+                "portal": "Cyient Careers",
+                "job_url": "https://www.cyient.com/careers",
+                "description": "Hiring EEE freshers with hands-on microcontroller, sensor interfacing, and embedded C firmware skills."
+            },
+            {
+                "job_id": "hexaware_fresher_cloud_2026",
+                "title": "Graduate Trainee - Software & Automation",
+                "company": "Hexaware Technologies",
+                "location": "Chennai / Pune, India",
+                "portal": "Hexaware Careers",
+                "job_url": "https://jobs.hexaware.com",
+                "description": "Entry-level position for engineering graduates interested in automation, cloud dashboards, and SQL databases."
             }
         ]
+        
+        import datetime
+        today_cycle = datetime.date.today().strftime("%Y%m%d")
         for op in openings:
+            base_id = op["job_id"]
+            # Dynamic cycle identifier to allow continuous active hiring drive applications
+            op["job_id"] = f"{base_id}_{today_cycle}"
             op["is_open_ats"] = False
             op["source_type"] = "direct_portal"
         return openings

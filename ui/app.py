@@ -44,25 +44,39 @@ st.markdown("---")
 
 # Control Center
 st.subheader("⚡ Agent Control Center")
+
+if "last_run_msg" in st.session_state:
+    st.success(st.session_state["last_run_msg"])
+    del st.session_state["last_run_msg"]
+if "last_run_info" in st.session_state:
+    st.info(st.session_state["last_run_info"])
+    del st.session_state["last_run_info"]
+
 ctrl_col1, ctrl_col2, ctrl_col3 = st.columns([1.5, 1.5, 1])
 
 with ctrl_col1:
     if st.button("⏰ Trigger Hourly Run (1-3 Jobs Now)", type="primary", use_container_width=True):
-        with st.spinner(f"Agent applying for fresher jobs & sending live proof emails..."):
+        with st.spinner(f"Agent applying for fresher jobs (1 Open ATS + Direct Company Portals) & sending live proof emails..."):
             results = job_applier.run_hourly_application_batch()
             if results:
-                st.success(f"Applied to {len(results)} jobs! Instant proof email sent to udayalakshmiboddu83@gmail.com.")
+                ats_c = sum(1 for j in results if j.get("is_open_ats"))
+                direct_c = sum(1 for j in results if not j.get("is_open_ats"))
+                st.session_state["last_run_msg"] = f"🎉 Successfully applied to {len(results)} jobs ({ats_c} Open ATS + {direct_c} Direct Company Portals)! Instant proof emails dispatched to udayalakshmiboddu83@gmail.com."
             else:
-                st.info("Daily quota reached or all current matching jobs have already been applied.")
+                st.session_state["last_run_info"] = "Daily quota reached or all matching listings have already been applied for today."
         st.rerun()
 
 with ctrl_col2:
-    batch_size = st.selectbox("Trigger Custom Batch Size:", options=[5, 10, 15, 20, 24], index=4)
+    batch_size = st.selectbox("Trigger Custom Batch Size:", options=[3, 5, 10, 15, 20, 24], index=1)
     if st.button("🚀 Trigger Full Batch", use_container_width=True):
         with st.spinner(f"Agent applying for up to {batch_size} fresher jobs..."):
             results = job_applier.run_daily_application_batch(target_count=batch_size)
             if results:
-                st.success(f"Applied to {len(results)} jobs! Emails dispatched.")
+                ats_c = sum(1 for j in results if j.get("is_open_ats"))
+                direct_c = sum(1 for j in results if not j.get("is_open_ats"))
+                st.session_state["last_run_msg"] = f"🎉 Successfully applied to {len(results)} jobs ({ats_c} Open ATS + {direct_c} Direct Portals)! Confirmation emails dispatched."
+            else:
+                st.session_state["last_run_info"] = "Daily quota reached or matching listings processed."
         st.rerun()
 
 with ctrl_col3:

@@ -19,6 +19,7 @@ if env_file.exists():
 # Candidate Configuration
 CANDIDATE_PROFILE_PATH = BASE_DIR / "data" / "candidate_profile.json"
 RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", "udayalakshmiboddu83@gmail.com")
+CANDIDATE_PORTAL_PASSWORD = os.getenv("CANDIDATE_PORTAL_PASSWORD", "Udaya@JNTUK2024!")
 
 # Email / SMTP Configuration
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")

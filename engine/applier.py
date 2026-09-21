@@ -70,7 +70,7 @@ class JobApplier:
 
         # 1. Fetch Candidates from both streams
         open_ats_candidates = job_searcher.search_open_ats_jobs(limit=30)
-        direct_portal_candidates = job_searcher.search_direct_company_jobs(limit=30)
+        direct_portal_candidates = job_searcher.search_direct_company_jobs(limit=40)
 
         selected_jobs = []
 
@@ -94,7 +94,7 @@ class JobApplier:
 
         # Fallback fill if either list was insufficient
         if len(selected_jobs) < remaining_quota:
-            for j in open_ats_candidates + direct_portal_candidates:
+            for j in direct_portal_candidates + open_ats_candidates:
                 if len(selected_jobs) >= remaining_quota:
                     break
                 if j not in selected_jobs and not db.is_job_applied(j.get("job_id")):
@@ -105,6 +105,9 @@ class JobApplier:
         applied_this_session = []
 
         for idx, job in enumerate(selected_jobs):
+            if len(applied_this_session) >= remaining_quota:
+                break
+
             job_id = job.get("job_id")
             match_score, rationale = matcher.calculate_match_score(job)
             db.record_job(job, match_score)
@@ -140,9 +143,7 @@ class JobApplier:
                     print(f"   ✅ Real-time verified proof email delivered successfully!")
                 
                 applied_this_session.append(job)
-                
-                # Human-like natural delay between applications (1.5 - 3.0 seconds)
-                time.sleep(random.uniform(1.5, 3.0))
+                time.sleep(random.uniform(1.0, 2.5))
             else:
                 db.update_application_status(job_id, status="FAILED", response_details=response_msg)
 
@@ -167,9 +168,12 @@ class JobApplier:
         if isOpenATS:
             try:
                 from engine.ats_applier import ats_applier
-                return ats_applier.apply_to_ats_portal(job=job, match_score=match_score)
+                success, msg, screenshot, ref_id = ats_applier.apply_to_ats_portal(job=job, match_score=match_score)
+                if success:
+                    return success, msg, screenshot, ref_id
+                print(f"   ⚠️ ATS browser notice: {msg}. Falling back to direct portal verification.")
             except Exception as e:
-                print(f"   ⚠️ ATS browser applier note: {e}")
+                print(f"   ⚠️ ATS browser applier exception: {e}")
 
         # Direct Corporate Portal Application
         try:
