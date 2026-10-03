@@ -123,14 +123,13 @@ class JobSearcher:
                         if any(neg in title_lower for neg in negative_keywords):
                             continue
 
-                        # Check role relevance and location (India, APAC, or Remote)
                         is_target_role = any(kw in title_lower for kw in target_keywords)
                         is_target_loc = "india" in loc_lower or "bangalore" in loc_lower or "bengaluru" in loc_lower or "hyderabad" in loc_lower or "remote" in loc_lower or "apac" in loc_lower or not loc_name
-                        
+
                         if is_target_role and is_target_loc:
                             job_id = j.get("id")
-                            # Build direct requisition URL that hosts the actual application form
-                            direct_apply_url = j.get("absolute_url") or f"https://job-boards.greenhouse.io/{slug}/jobs/{job_id}"
+                            # Build direct requisition URL that directly hosts the single-page application form
+                            direct_apply_url = f"https://job-boards.greenhouse.io/{slug}/jobs/{job_id}"
                             
                             discovered_jobs.append({
                                 "job_id": f"gh_{slug}_{job_id}",
